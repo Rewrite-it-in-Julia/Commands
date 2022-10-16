@@ -1,7 +1,6 @@
 import Base.show
 using Base.Filesystem: getusername, getgroupname
-using Dates
-using DataFrames
+using Dates, DataFrames, Crayons, PrettyTables
 
 struct File
     permissions::String
@@ -11,6 +10,10 @@ struct File
     date::DateTime
     modified::DateTime
     name::String
+
+    isdir::Bool
+    isfile::Bool
+    islink::Bool
 end
 
 struct ListDir
@@ -37,7 +40,16 @@ end
 
 function calculateFileSize(path::AbstractString)::Int
     if isdir(path)
-        reduce(+, map(calculateFileSize, readdir(path; join=true))) + filesize(path)
+        try
+            files = readdir(path; join = true)
+            reduce(+, map(calculateFileSize, files)) + filesize(path)    
+        catch error
+            if isa(error, Base.IOError)
+                @error error
+                return 0
+            end
+        end
+        
     else
         return filesize(path)
     end
@@ -48,15 +60,25 @@ function File(path::AbstractString)::File
     perm = permissions(path)
     size = calculateFileSize(path)
 
-    _stat = stat(path)
-    user = getusername(_stat.uid)
-    group = getgroupname(_stat.gid)
+    filestat = stat(path)
+    user = getusername(filestat.uid)
+    group = getgroupname(filestat.gid)
 
-    date = unix2datetime(_stat.ctime)
-    modified = unix2datetime(_stat.mtime)
+    date = unix2datetime(filestat.ctime)
+    modified = unix2datetime(filestat.mtime)
     
-    path = last(split(path, '/'))
-    return File(perm, round(size / 1024; digits=2), user, group, date, modified, path)
+    filepath = last(split(path, '/'))
+    
+    return File(perm, 
+                round(size / 1024; digits=2), 
+                user, 
+                group, 
+                date, 
+                modified, 
+                filepath, 
+                isdir(path),
+                isfile(path),
+                islink(path))
 end
 
 listdir(start::String)::ListDir = begin
@@ -69,14 +91,18 @@ end
 
 function show(io::IO, ld::ListDir)
     files = ld.files
-
     dataframe = DataFrame()
-    dataframe[!, :Name] = map(x -> x.name, files)
-    dataframe[!, :Permission] = map(x -> x.permissions, files)
-    dataframe[!, :User] = map(x -> x.user, files)
-    dataframe[!, :Group] = map(x -> x.group, files)
-    dataframe[!, :Date] = map(x -> x.date, files)
-    dataframe[!, :Modified] = map(x -> x.modified, files)
-    dataframe[!, Symbol("Size(KB)")] = map(x -> x.size, files)
-    show(io, dataframe, allrows = true)
+    dataframe[!, :Name] = map(x::File -> x.name, files)
+    
+    dataframe[!, :Permission] = map(x::File -> x.permissions, files)
+    dataframe[!, Symbol("Size(KB)")] = map(x::File -> x.size, files)
+    dataframe[!, :User] = map(x::File -> x.user, files)
+    dataframe[!, :Group] = map(x::File -> x.group, files)
+    dataframe[!, :Date] = map(x::File -> x.date, files)
+    dataframe[!, :Modified] = map(x::File -> x.modified, files)
+    
+    highlighter1 = Highlighter((data, row, column) -> column == 1 && files[row].isdir, foreground = :blue, bold = true)
+    highlighter2 = Highlighter((data, row, column) -> column == 1 && files[row].islink, foreground = :green)
+
+    pretty_table(io, dataframe, highlighters = (highlighter1, highlighter2))
 end
