@@ -1,0 +1,85 @@
+#+title: Commands written in Julia
+* 注意
+这里我们不写命令行程序，我们只写函数来模拟这一过程
+* listdir
+** 介绍
+我们定义了一个 *文件* 结构
+#+begin_src julia
+  struct File
+    permissions::String
+    size::Float64
+    user::String
+    group::String
+    date::DateTime
+    modified::DateTime
+    name::String
+
+    isdir::Bool
+    isfile::Bool
+    islink::Bool
+  end
+#+end_src
+
+我们通过 =listdir(path)= 操作来显示 =path= 路径下的所有文件信息，用 =ListDir= 结构来表示所有文件的集合
+#+begin_src julia
+  struct ListDir
+    files::Vector{File}
+  end
+#+end_src
+
+这里我们要显示文件的
+1. 权限
+2. 大小 (KB)
+3. 用户
+4. 组
+5. 创建时间 (date)
+6. 修改时间 (modified)
+7. 名称
+
+打印信息时，可以根据一些文件特征来显示不同配色，如
+1. 如果文件是目录，打印出蓝色，粗体
+2. 如果文件是链接，打印出绿色
+
+最后再来看看我们调用 =listdir(path)= 后怎么显示信息的
+#+begin_src julia
+  function show(io::IO, ld::ListDir)
+    files = ld.files
+    dataframe = DataFrame()
+    dataframe[!, :Name] = map(x::File -> x.name, files)
+  
+    dataframe[!, :Permission] = map(x::File -> x.permissions, files)
+    dataframe[!, Symbol("Size(KB)")] = map(x::File -> x.size, files)
+    dataframe[!, :User] = map(x::File -> x.user, files)
+    dataframe[!, :Group] = map(x::File -> x.group, files)
+    dataframe[!, :Date] = map(x::File -> x.date, files)
+    dataframe[!, :Modified] = map(x::File -> x.modified, files)
+  
+    highlighter1 = Highlighter((data, row, column) -> column == 1 && files[row].isdir, foreground = :blue, bold = true)
+    highlighter2 = Highlighter((data, row, column) -> column == 1 && files[row].islink, foreground = :green)
+
+    pretty_table(io, dataframe, highlighters = (highlighter1, highlighter2))
+  end
+#+end_src
+我们这里用到了 *PrettyTables* 包
+** 注意
+- 源码中注意，使用 =readdir= 是加了 =join= 参数，不加的可能会有些错误在以后的函数调用中，具体看看文档
+- 另外有一个问题，自己试了一下
+  #+begin_src julia
+    df = DataFrame()
+    df[!, :hello] = 1:100
+
+    print(df) # 这个显示的不全面
+    print(stdout, df) # 这个把所有数据都显示出来了
+  #+end_src
+  这个问题能解决就好了
+** 下一步
+我本来是想参考这张图片来设计程序的
+
+#+DOWNLOADED: screenshot @ 2022-10-16 23:14:06
+[[file:images/listdir/2022-10-16_23-14-06_screenshot.png]]
+
+现在需要做的是
+- [ ] 调节配色方案
+- [ ] 调整 创建时间 和 修改时间 的格式
+- [ ] 将 文件大小 格式化为 KB 和 MB
+- [ ] 解决上面的 =print(stdout)= 问题
