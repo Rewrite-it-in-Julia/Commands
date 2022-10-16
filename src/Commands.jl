@@ -1,5 +1,5 @@
 module Commands
+include("listdir.jl")
 
-greet() = print("Hello World!")
-
+export listdir
 end # module
