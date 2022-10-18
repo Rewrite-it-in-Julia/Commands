@@ -61,6 +61,11 @@
   end
 #+end_src
 我们这里用到了 *PrettyTables* 包
+** 例子
+
+#+DOWNLOADED: screenshot @ 2022-10-18 10:57:12
+[[file:images/listdir/2022-10-18_10-57-12_screenshot.png]]
+
 ** 注意
 - 源码中注意，使用 =readdir= 是加了 =join= 参数，不加的可能会有些错误在以后的函数调用中，具体看看文档
 - 另外有一个问题，自己试了一下
@@ -83,3 +88,30 @@
 - [ ] 调整 创建时间 和 修改时间 的格式
 - [ ] 将 文件大小 格式化为 KB 和 MB
 - [ ] 解决上面的 =print(stdout)= 问题
+
+* findfile
+** 介绍
+我们定义一个函数 =findfile=
+#+begin_src julia
+  function findfile(start::AbstractString, pattern::Union{Regex, AbstractString};
+                      absolute::Bool = false, 
+                      extension::String = "", 
+                      owner::Union{String, Nothing} = nothing)::Vector{String}
+
+#+end_src
+
+他接收
+1. =start= 从哪里开始搜索
+2. =pattern= 匹配的模式
+3. =absolute= 是否显示绝对路径名
+4. =extension= 查找的文件名后缀
+5. =owner= 查找的文件所有者
+
+** 例子
+
+#+DOWNLOADED: screenshot @ 2022-10-18 10:58:48
+[[file:images/findfile/2022-10-18_10-58-48_screenshot.png]]
+
+** 下一步
+- [ ] 返回结果时，将目录名用蓝色高亮
+- [ ] 返回结果时，将匹配的 =pattern= 用红色高亮
