@@ -1,6 +1,6 @@
 import Base.show
 using Base.Filesystem: getusername, getgroupname
-using Dates, DataFrames, Crayons, PrettyTables
+using Dates, DataFrames, PrettyTables
 
 struct File
     permissions::String

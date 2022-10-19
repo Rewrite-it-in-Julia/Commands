@@ -1,6 +1,7 @@
 module Commands
 include("listdir.jl")
 include("findfile.jl")
-
-export listdir, findfile
+include("wipe.jl")
+export listdir, findfile, wipe, pathsToDelete
+export RUST, NODE_MODULES
 end # module
