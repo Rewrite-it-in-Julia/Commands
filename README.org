@@ -115,3 +115,34 @@
 ** 下一步
 - [ ] 返回结果时，将目录名用蓝色高亮
 - [ ] 返回结果时，将匹配的 =pattern= 用红色高亮
+
+* wipe
+** 介绍
+这个函数参考自 https://github.com/mihai-dinculescu/cargo-wipe
+这里简单实现下他的功能
+#+begin_src julia
+  function wipe(start::AbstractString, target::Target; wipe = false)
+#+end_src
+
+其中 =target= 为
+#+begin_src julia
+  @enum Target begin
+      RUST
+      NODE_MODULES
+  end
+#+end_src
+** 例子
+在 REPL 中输入
+#+begin_src julia
+  wipe("/home/steiner/workspace", RUST)
+#+end_src
+
+#+DOWNLOADED: screenshot @ 2022-10-19 23:08:00
+[[file:images/wipe/2022-10-19_23-08-00_screenshot.png]]
+程序显示
+1. 文件多少
+2. 文件大小
+3. 文件路径
+** 下一步
+- [ ] 统计所有文件大小
+- [ ] 添加 =ignore= 目录

@@ -18,10 +18,7 @@ end
 
 function wipe(start::AbstractString, target::Target; wipe = false)
     fileitems = pathsToDelete(start, target)
-    
-    for item in fileitems
-        println(item)
-    end
+    println(fileitems)
 
     if wipe
         foreach(item -> rm(item.path; recursive = true), fileitems)
@@ -73,6 +70,15 @@ end
 function show(io::IO, fileitem::DeleteFileItem)
     fe = FormatExpr("{:$(SPACING_FILES)}{:$(SPACING_SIZE)}{:$(SPACING_PATH)}")
     print(io, format(fe, fileitem.filecount, fileitem.filesize, fileitem.path))
+end
+
+function show(io::IO, fileitems::Vector{DeleteFileItem})
+    fe = FormatExpr("{:$(SPACING_FILES)}{:$(SPACING_SIZE)}{:$(SPACING_PATH)}")
+    println(io, format(fe, "Files", "Size(MB)", "Path"))
+    for item in fileitems
+        show(io, item)
+        println(io)
+    end
 end
 
 function String(target::Target)::String
