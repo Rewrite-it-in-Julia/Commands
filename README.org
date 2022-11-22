@@ -46,14 +46,14 @@
     files = ld.files
     dataframe = DataFrame()
     dataframe[!, :Name] = map(x::File -> x.name, files)
-  
+
     dataframe[!, :Permission] = map(x::File -> x.permissions, files)
     dataframe[!, Symbol("Size(KB)")] = map(x::File -> x.size, files)
     dataframe[!, :User] = map(x::File -> x.user, files)
     dataframe[!, :Group] = map(x::File -> x.group, files)
     dataframe[!, :Date] = map(x::File -> x.date, files)
     dataframe[!, :Modified] = map(x::File -> x.modified, files)
-  
+
     highlighter1 = Highlighter((data, row, column) -> column == 1 && files[row].isdir, foreground = :blue, bold = true)
     highlighter2 = Highlighter((data, row, column) -> column == 1 && files[row].islink, foreground = :green)
 
@@ -94,9 +94,9 @@
 我们定义一个函数 =findfile=
 #+begin_src julia
   function findfile(start::AbstractString, pattern::Union{Regex, AbstractString};
-                      absolute::Bool = false, 
-                      extension::String = "", 
-                      owner::Union{String, Nothing} = nothing)::Vector{String}
+                    absolute::Bool = false, 
+                    extension::String = "", 
+                    owner::Union{String, Nothing} = nothing)::Vector{String}
 
 #+end_src
 
@@ -127,8 +127,8 @@
 其中 =target= 为
 #+begin_src julia
   @enum Target begin
-      RUST
-      NODE_MODULES
+    RUST
+    NODE_MODULES
   end
 #+end_src
 ** 例子
@@ -146,3 +146,29 @@
 ** 下一步
 - [ ] 统计所有文件大小
 - [ ] 添加 =ignore= 目录
+
+* tar
+** 创建 tar 文件
+#+begin_src julia
+  createtar(files::Vector{String}, target::String; gzip::Bool=false)
+#+end_src
+
+** 列出 tar 里所有文件
+#+begin_src julia
+  listtar(target::String)
+#+end_src
+
+** 将文件添加到 tar 文件中
+#+begin_src julia
+  appendfiles(files::Vector{String}, target::String)
+  appendfile(file::String, target::String)
+#+end_src
+** 将文件从 tar 中删除
+#+begin_src julia
+  deletefile(file::String, target::String)
+#+end_src
+
+** 解压 tar 文件
+#+begin_src julia
+  extracttar(tarfile::String, target::String="."; gzip::Bool=false)
+#+end_src
